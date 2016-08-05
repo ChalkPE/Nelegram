@@ -2,10 +2,12 @@ package pe.chalk.nelegram;
 
 import cn.nukkit.Server;
 import cn.nukkit.utils.Config;
+import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import pe.chalk.nelegram.event.TelegramMessageEvent;
+import pe.chalk.nelegram.util.UnsafeRunnable;
 
 import java.util.Objects;
 
@@ -27,7 +29,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return this.config.getString("username");
+        return "Nelegram";
     }
 
     @Override
@@ -37,5 +39,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         if(!message.hasText() || Objects.isNull(message.getFrom())) return;
         Server.getInstance().getPluginManager().callEvent(new TelegramMessageEvent(message));
+    }
+
+    public void sendMessageToTarget(String text){
+        UnsafeRunnable.start(() -> this.sendMessage(new SendMessage().setChatId(this.config.getString("target")).setText(text)));
     }
 }

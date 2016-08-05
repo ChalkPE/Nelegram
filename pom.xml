@@ -11,7 +11,7 @@
 
     <name>Nelegram</name>
     <description>Integrate your Nukkit server with Telegram.</description>
-    <url>https://github.com/${author}/${name}</url>
+    <url>https://github.com/${author}/${project.name}</url>
     <inceptionYear>2016</inceptionYear>
 
     <licenses>
@@ -37,7 +37,7 @@
     </properties>
 
     <issueManagement>
-        <url>https://github.com/${author}/${name}/issues</url>
+        <url>https://github.com/${author}/${project.name}/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
 
@@ -71,7 +71,7 @@
     <build>
         <defaultGoal>clean install</defaultGoal>
         <sourceDirectory>src/main/java</sourceDirectory>
-        <finalName>${artifactId}-${version}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
 
         <resources>
             <resource>

@@ -1,9 +1,9 @@
-name: ${name}
-version: ${version}
+name: ${project.name}
+version: ${project.version}
 
 api: [1.0.0]
-main: ${groupId}.${artifactId}.${name}
+main: ${project.groupId}.${project.artifactId}.${project.name}
 
 author: ${author}
-description: ${description}
-website: ${url}
+description: ${project.description}
+website: ${project.url}

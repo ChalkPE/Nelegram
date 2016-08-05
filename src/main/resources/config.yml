@@ -1,2 +1,7 @@
-token: "YOUR_TELEGRAM_BOT_TOKEN"
-username: "@YourTelegramBotUsername"
+# Your Telegram bot's token. (https://core.telegram.org/bots/api#authorizing-your-bot)
+# Example: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+token: ""
+
+# The chat_id of your Telegram group "or" the public name of your Telegram channel.
+# Example: "-23612486", "@xkcdchannel"
+target: ""
