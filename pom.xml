@@ -16,8 +16,9 @@
 
     <licenses>
         <license>
-            <name>GNU General Public License (GPL)</name>
-            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <name>GNU Affero General Public License version 3.0</name>
+            <url>http://www.gnu.org/licenses/agpl-3.0.txt</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 
@@ -62,9 +63,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.rubenlagus</groupId>
-            <artifactId>TelegramBots</artifactId>
-            <version>v2.3.3.6</version>
+            <groupId>com.github.ChalkPE</groupId>
+            <artifactId>TelegramBot</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 

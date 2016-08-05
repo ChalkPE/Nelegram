@@ -2,10 +2,10 @@ package pe.chalk.nelegram;
 
 import cn.nukkit.Server;
 import cn.nukkit.plugin.PluginBase;
-import org.telegram.telegrambots.TelegramBotsApi;
-import pe.chalk.nelegram.util.UnsafeRunnable;
+import pe.chalk.telegram.TelegramBot;
 
 import java.io.File;
+import java.util.Objects;
 
 /**
  * @author ChalkPE <chalk@chalk.pe>
@@ -13,11 +13,28 @@ import java.io.File;
  */
 public class Nelegram extends PluginBase {
     private static Nelegram instance;
+    private static TelegramBot bot;
 
-    private TelegramBotsApi api;
-    private TelegramBot bot;
+    private static String token;
+    private static Integer target;
 
     private NelegramHandler handler;
+
+    public static Nelegram getInstance() {
+        return Nelegram.instance;
+    }
+
+    public static TelegramBot getBot() {
+        return Nelegram.bot;
+    }
+
+    public static String getToken() {
+        return Nelegram.token;
+    }
+
+    public static Integer getTarget() {
+        return Nelegram.target;
+    }
 
     @Override
     public void onLoad() {
@@ -28,27 +45,39 @@ public class Nelegram extends PluginBase {
     public void onEnable() {
         this.saveDefaultConfig();
 
-        if (this.getConfig().getString("token", "").trim().isEmpty()) {
-            this.getLogger().alert("You need to set your Telegram bot token to enable this plugin");
-            this.getLogger().alert("-> " + new File(this.getDataFolder(), "config.yml").getAbsolutePath());
-            this.getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+        Nelegram.token = this.require("token", "");
+        if (Objects.isNull(Nelegram.token)) return;
 
-        this.api = new TelegramBotsApi();
-        this.bot = new TelegramBot(this.getConfig());
-        UnsafeRunnable.start(() -> this.api.registerBot(bot));
+        Nelegram.target = this.require("target", 0);
+        if (Objects.isNull(Nelegram.target)) return;
+
+        Nelegram.bot = new TelegramBot(Nelegram.getToken());
+        Nelegram.bot.start();
 
         this.handler = new NelegramHandler();
-        this.getServer().getPluginManager().registerEvents(this.handler, this);
-        this.getServer().getPluginManager().subscribeToPermission(Server.BROADCAST_CHANNEL_USERS, this.handler);
+        this.getServer().getPluginManager().registerEvents(this.getHandler(), this);
+        this.getServer().getPluginManager().subscribeToPermission(Server.BROADCAST_CHANNEL_USERS, this.getHandler());
+
+        Nelegram.bot.addHandler(this.handler);
     }
 
-    public static Nelegram getInstance() {
-        return Nelegram.instance;
+    @Override
+    public void onDisable() {
+        Nelegram.bot.interrupt();
     }
 
-    public TelegramBot getBot() {
-        return this.bot;
+    public NelegramHandler getHandler() {
+        return this.handler;
+    }
+
+    private <T> T require(String key, T defaultValue) {
+        final T value = this.getConfig().get(key, defaultValue);
+        if (!value.equals(defaultValue)) return value;
+
+        this.getLogger().alert("You need to set `" + key + "` to enable this plugin");
+        this.getLogger().alert("-> " + new File(this.getDataFolder(), "config.yml").getAbsolutePath());
+
+        this.getServer().getPluginManager().disablePlugin(this);
+        return null;
     }
 }

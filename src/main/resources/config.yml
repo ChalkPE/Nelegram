@@ -2,6 +2,6 @@
 # Example: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
 token: ""
 
-# The chat_id of your Telegram group "or" the public name of your Telegram channel.
-# Example: "-23612486", "@xkcdchannel"
-target: ""
+# The chat_id of your Telegram group
+# Example: -23612486
+target: 0

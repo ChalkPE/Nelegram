@@ -2,8 +2,8 @@ package pe.chalk.nelegram.event;
 
 import cn.nukkit.event.HandlerList;
 import cn.nukkit.event.plugin.PluginEvent;
-import org.telegram.telegrambots.api.objects.Message;
 import pe.chalk.nelegram.Nelegram;
+import pe.chalk.telegram.type.message.Message;
 
 /**
  * @author ChalkPE <chalk@chalk.pe>
