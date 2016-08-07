@@ -7,12 +7,8 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.utils.TextFormat;
 import pe.chalk.nelegram.event.TelegramMessageEvent;
-import pe.chalk.telegram.handler.UpdateHandler;
-import pe.chalk.telegram.method.MeGetter;
 import pe.chalk.telegram.method.TextMessageSender;
-import pe.chalk.telegram.type.Update;
 import pe.chalk.telegram.type.message.*;
-import pe.chalk.telegram.type.user.User;
 
 import java.util.List;
 import java.util.Objects;
@@ -22,16 +18,10 @@ import java.util.stream.Collectors;
  * @author ChalkPE <chalk@chalk.pe>
  * @since 2016-08-04
  */
-public class NelegramHandler extends ConsoleCommandSender implements Listener, UpdateHandler {
-    private User me;
-
-    public NelegramHandler() {
-        this.me = new MeGetter().get(Nelegram.getBot());
-    }
-
+public class NelegramMessenger extends ConsoleCommandSender implements Listener {
     @Override
     public String getName() {
-        return this.me.getUsername();
+        return "NelegramMessenger";
     }
 
     @Override
@@ -40,20 +30,16 @@ public class NelegramHandler extends ConsoleCommandSender implements Listener, U
         for (String line: text.split("\n")) new TextMessageSender(Nelegram.getTarget(), line).send(Nelegram.getBot());
     }
 
-    @Override
-    public void handleMessage(List<Update> updates) {
-        updates.parallelStream().map(Update::getMessage).filter(Objects::nonNull).map(TelegramMessageEvent::new).forEach(this.getServer().getPluginManager()::callEvent);
-    }
-
     @EventHandler
     @SuppressWarnings("unused")
     public void onTelegramMessage(TelegramMessageEvent event) {
         final Message message = event.getMessage();
         if (!message.getChat().getId().equals(Nelegram.getTarget())) return;
         if (!message.hasFrom() || !message.getFrom().hasUsername()) return;
+        if (message instanceof TextMessage && ((TextMessage) message).getText().startsWith("/")) return;
 
         final String text = this.getServer().getLanguage().translateString("chat.type.text", new String[]{ message.getFrom().getUsername(), TextFormat.clean(this.visualizeMessage(message)) });
-        final List<CommandSender> recipients = this.getServer().getPluginManager().getPermissionSubscriptions(Server.BROADCAST_CHANNEL_USERS).stream().filter(v -> v instanceof CommandSender && !(v instanceof NelegramHandler)).map(CommandSender.class::cast).collect(Collectors.toList());
+        final List<CommandSender> recipients = this.getServer().getPluginManager().getPermissionSubscriptions(Server.BROADCAST_CHANNEL_USERS).stream().filter(v -> v instanceof CommandSender && !(v instanceof NelegramMessenger)).map(CommandSender.class::cast).collect(Collectors.toList());
 
         this.getServer().broadcastMessage(text, recipients);
     }

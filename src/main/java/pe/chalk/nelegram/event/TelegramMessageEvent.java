@@ -21,7 +21,6 @@ public class TelegramMessageEvent extends PluginEvent {
         return this.message;
     }
 
-    @SuppressWarnings("unused")
     public void setMessage(Message message) {
         this.message = message;
     }

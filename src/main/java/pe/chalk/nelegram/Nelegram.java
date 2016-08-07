@@ -2,10 +2,16 @@ package pe.chalk.nelegram;
 
 import cn.nukkit.Server;
 import cn.nukkit.plugin.PluginBase;
+import pe.chalk.nelegram.event.TelegramMessageEvent;
 import pe.chalk.telegram.TelegramBot;
+import pe.chalk.telegram.method.MeGetter;
+import pe.chalk.telegram.type.Update;
+import pe.chalk.telegram.type.user.User;
 
 import java.io.File;
 import java.util.Objects;
+
+import static cn.nukkit.utils.TextFormat.*;
 
 /**
  * @author ChalkPE <chalk@chalk.pe>
@@ -17,8 +23,10 @@ public class Nelegram extends PluginBase {
 
     private static String token;
     private static Integer target;
+    private static User me;
 
-    private NelegramHandler handler;
+    private NelegramMessenger messenger;
+    private NelegramAuthenticator authenticator;
 
     public static Nelegram getInstance() {
         return Nelegram.instance;
@@ -36,6 +44,10 @@ public class Nelegram extends PluginBase {
         return Nelegram.target;
     }
 
+    public static User getMe() {
+        return Nelegram.me;
+    }
+
     @Override
     public void onLoad() {
         Nelegram.instance = this;
@@ -51,14 +63,19 @@ public class Nelegram extends PluginBase {
         Nelegram.target = this.require("target", 0);
         if (Objects.isNull(Nelegram.target)) return;
 
+        this.messenger = new NelegramMessenger();
+        this.getServer().getPluginManager().registerEvents(this.getMessenger(), this);
+        this.getServer().getPluginManager().subscribeToPermission(Server.BROADCAST_CHANNEL_USERS, this.getMessenger());
+
+        this.authenticator = new NelegramAuthenticator();
+        this.getServer().getPluginManager().registerEvents(this.getAuthenticator(), this);
+
         Nelegram.bot = new TelegramBot(Nelegram.getToken());
+        Nelegram.bot.addHandler(updates -> updates.parallelStream().map(Update::getMessage).filter(Objects::nonNull).map(TelegramMessageEvent::new).forEach(this.getServer().getPluginManager()::callEvent));
         Nelegram.bot.start();
 
-        this.handler = new NelegramHandler();
-        this.getServer().getPluginManager().registerEvents(this.getHandler(), this);
-        this.getServer().getPluginManager().subscribeToPermission(Server.BROADCAST_CHANNEL_USERS, this.getHandler());
-
-        Nelegram.bot.addHandler(this.handler);
+        Nelegram.me = new MeGetter().get(Nelegram.bot);
+        this.getLogger().info("bot started: " + GREEN + "@" + Nelegram.me.getUsername() + RESET + " (" + Nelegram.me.getId() + ")");
     }
 
     @Override
@@ -66,8 +83,12 @@ public class Nelegram extends PluginBase {
         Nelegram.bot.interrupt();
     }
 
-    public NelegramHandler getHandler() {
-        return this.handler;
+    public NelegramMessenger getMessenger() {
+        return this.messenger;
+    }
+
+    public NelegramAuthenticator getAuthenticator() {
+        return this.authenticator;
     }
 
     private <T> T require(String key, T defaultValue) {
