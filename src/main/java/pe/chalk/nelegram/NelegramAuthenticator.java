@@ -12,22 +12,11 @@ import cn.nukkit.event.inventory.CraftItemEvent;
 import cn.nukkit.event.inventory.InventoryOpenEvent;
 import cn.nukkit.event.inventory.InventoryPickupArrowEvent;
 import cn.nukkit.event.inventory.InventoryPickupItemEvent;
-import cn.nukkit.event.player.PlayerChatEvent;
-import cn.nukkit.event.player.PlayerDropItemEvent;
-import cn.nukkit.event.player.PlayerFoodLevelChangeEvent;
-import cn.nukkit.event.player.PlayerInteractEvent;
-import cn.nukkit.event.player.PlayerItemConsumeEvent;
-import cn.nukkit.event.player.PlayerItemHeldEvent;
-import cn.nukkit.event.player.PlayerJoinEvent;
-import cn.nukkit.event.player.PlayerMoveEvent;
-import cn.nukkit.event.player.PlayerPreLoginEvent;
-import cn.nukkit.event.player.PlayerQuitEvent;
-import cn.nukkit.event.player.PlayerToggleSneakEvent;
-import cn.nukkit.event.player.PlayerToggleSprintEvent;
+import cn.nukkit.event.player.*;
 import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.ConfigSection;
-import cn.nukkit.utils.MainLogger;
+import cn.nukkit.utils.TextFormat;
 import pe.chalk.nelegram.event.TelegramMessageEvent;
 import pe.chalk.telegram.method.TextMessageSender;
 import pe.chalk.telegram.type.message.Message;
@@ -83,7 +72,7 @@ public class NelegramAuthenticator implements Listener {
     }
 
     public void setAuthenticated(Player player) {
-        this.setAuthenticated(player, true);
+        this.setAuthenticated(player.getName());
     }
 
     public void setAuthenticated(String player) {
@@ -105,7 +94,6 @@ public class NelegramAuthenticator implements Listener {
         if (!message.hasFrom() || !message.getFrom().hasUsername()) return;
 
         this.config.getSection("ids").put(message.getFrom().getUsername().toLowerCase(), message.getFrom().getId());
-        this.config.getSection("ids").entrySet().forEach(entry -> MainLogger.getLogger().alert(entry.getKey() + " = " + entry.getValue()));
         this.config.save();
     }
 
@@ -138,6 +126,9 @@ public class NelegramAuthenticator implements Listener {
         this.passwords.put(player.getName().toLowerCase(), password);
 
         new TextMessageSender(this.getChatId(player), "Password: " + password).send(Nelegram.getBot());
+
+        player.sendMessage(TextFormat.AQUA + "A password has been sent to you.");
+        player.sendMessage(TextFormat.AQUA + "Please check your Telegram account.");
     }
 
     @EventHandler
@@ -146,7 +137,26 @@ public class NelegramAuthenticator implements Listener {
         final Player player = event.getPlayer();
         if (!this.isAuthenticated(player)) {
             event.setCancelled();
-            if (event.getMessage().equals(this.passwords.get(player.getName().toLowerCase()))) this.setAuthenticated(player);
+
+            if (!event.getMessage().equals(this.passwords.get(player.getName().toLowerCase()))) {
+                player.sendMessage(TextFormat.RED + "Please type your password.");
+                return;
+            }
+
+            this.setAuthenticated(player);
+
+            player.sendMessage(TextFormat.GREEN + "Welcome!");
+            new TextMessageSender(this.getChatId(player), "You've been logged in from " + player.getAddress()).send(Nelegram.getBot());
+        }
+    }
+
+    @EventHandler
+    @SuppressWarnings("unused")
+    public void onCommandPreProcess(PlayerCommandPreprocessEvent event) {
+        final Player player = event.getPlayer();
+        if (!this.isAuthenticated(player)) {
+            event.setCancelled();
+            player.sendMessage(TextFormat.RED + "Please type your password.");
         }
     }
 
@@ -227,7 +237,11 @@ public class NelegramAuthenticator implements Listener {
     @EventHandler
     @SuppressWarnings("unused")
     public void onInteract(PlayerInteractEvent event) {
-        if (!this.isAuthenticated(event.getPlayer())) event.setCancelled();
+        final Player player = event.getPlayer();
+        if (!this.isAuthenticated(player)) {
+            event.setCancelled();
+            player.sendMessage(TextFormat.RED + "Please type your password.");
+        }
     }
 
     @EventHandler
@@ -239,6 +253,10 @@ public class NelegramAuthenticator implements Listener {
     @EventHandler
     @SuppressWarnings("unused")
     public void onPlace(BlockPlaceEvent event) {
-        if (!this.isAuthenticated(event.getPlayer())) event.setCancelled();
+        final Player player = event.getPlayer();
+        if (!this.isAuthenticated(player)) {
+            event.setCancelled();
+            player.sendMessage(TextFormat.RED + "Please type your password.");
+        }
     }
 }
